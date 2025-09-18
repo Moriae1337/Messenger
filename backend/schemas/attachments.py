@@ -13,7 +13,7 @@ class AttachmentCreate(AttachmentBase):
 
 class AttachmentRead(AttachmentBase):
     id: int
-    created_at: datetime
+    uploaded_at: datetime
 
     class Config:
         orm_mode = True

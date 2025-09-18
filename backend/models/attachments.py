@@ -1,7 +1,6 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, DateTime,func
 from sqlalchemy.orm import relationship
-from datetime import datetime
-from core.database import Base
+from core import Base
 
 class Attachment(Base):
     __tablename__ = "attachments"
@@ -13,5 +12,5 @@ class Attachment(Base):
     size = Column(Integer, nullable=False)
     uploaded_at = Column(DateTime, default=func.now())
     
-    message_id = Column(Integer, ForeignKey("messages.id"))
+    message_id = Column(Integer, ForeignKey("messages.id",ondelete="CASCADE"),nullable=False)
     message = relationship("Message", back_populates="attachments")
