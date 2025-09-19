@@ -1,10 +1,27 @@
 from fastapi import FastAPI, Depends
 from sqlalchemy import text
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.ext.asyncio import AsyncSession
-from core import get_db
+from core import get_db, JWTMiddleware
 from routers import users
 
 app = FastAPI()
+
+app.add_middleware(JWTMiddleware)
+
+# ================= CORS =================
+origins = [
+    "http://localhost:5173",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+# ========================================
 
 @app.get("/health")
 async def health_check(db: AsyncSession = Depends(get_db)):

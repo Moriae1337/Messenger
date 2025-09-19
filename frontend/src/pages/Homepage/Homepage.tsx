@@ -2,11 +2,21 @@ import { useState, useMemo } from "react";
 import type { DragEvent } from "react";
 import debounce from "lodash.debounce";
 import { FaFileAlt, FaTrash, FaPaperPlane } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
+
+interface User {
+  id: number;
+  username: string;
+  email: string;
+  created_at: string;
+}
 
 export default function Homepage() {
   const [isDragging, setIsDragging] = useState(false);
   const [files, setFiles] = useState<File[]>([]);
   const [query, setQuery] = useState("");
+  const [users, setUsers] = useState<User[]>([]);
+  const navigate = useNavigate();
 
   const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -33,11 +43,33 @@ export default function Homepage() {
 
   const sendFiles = () => {
     console.log("Sending files:", files);
-    // TODO: реальна логіка надсилання
   };
 
-  const fetchData = (searchTerm: string) => {
-    if (searchTerm.length > 3) console.log("API Call:", searchTerm);
+  const fetchData = async (searchTerm: string) => {
+    const token = localStorage.getItem("access_token");
+    try {
+      const res = await fetch(`http://localhost:8000/users/${searchTerm}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (res.status === 401) {
+        navigate("/login");
+        return;
+      }
+
+      if (!res.ok) {
+        setUsers([]);
+        return;
+      }
+
+      const data: User[] = await res.json();
+      setUsers(data);
+    } catch (err) {
+      console.error("Fetch error:", err);
+      setUsers([]);
+    }
   };
 
   const debouncedFetchData = useMemo(() => debounce(fetchData, 500), []);
@@ -62,12 +94,18 @@ export default function Homepage() {
         {/* Available chats */}
         <div className="flex-1 w-full overflow-y-auto">
           <ul>
-            <li className="p-4 hover:bg-gray-700 cursor-pointer text-white rounded">
-              User 1
-            </li>
-            <li className="p-4 hover:bg-gray-700 cursor-pointer text-white rounded">
-              User 2
-            </li>
+            {users.length > 0 ? (
+              users.map((user) => (
+                <li
+                  key={user.id}
+                  className="p-4 hover:bg-gray-700 cursor-pointer text-white rounded"
+                >
+                  {user.username}
+                </li>
+              ))
+            ) : (
+              <li className="p-4 text-gray-400">No users found</li>
+            )}
           </ul>
         </div>
       </div>

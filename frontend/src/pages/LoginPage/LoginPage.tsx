@@ -1,14 +1,48 @@
-import { useState } from "react";
-import { FaGoogle, FaGithub } from "react-icons/fa";
-import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useToast } from "../../components/ToastProvider";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+  const { showToast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    localStorage.clear();
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log({ email, password });
+    setLoading(true);
+
+    const formData = new URLSearchParams();
+    formData.append("username", username);
+    formData.append("password", password);
+
+    const response = await fetch("http://localhost:8000/users/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: formData,
+    });
+
+    if (!response.ok) {
+      setLoading(false);
+      const errorData = await response.json();
+      showToast(errorData.detail || "Something went wrong", "error");
+      throw new Error(errorData.detail || "Login failed");
+    }
+
+    const data = await response.json();
+    console.log(data);
+    localStorage.setItem("access_token", data.access_token);
+    localStorage.setItem("username", data.username);
+    setLoading(false);
+    showToast("User login successfull!", "success");
+    navigate("/");
   };
 
   return (
@@ -20,10 +54,10 @@ export default function LoginPage() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            type="text"
+            placeholder="Username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
             className="w-full px-4 py-2 rounded-lg bg-[#0f0e18] text-white border border-gray-600 focus:outline-none focus:border-purple-500"
             required
           />
@@ -37,28 +71,26 @@ export default function LoginPage() {
           />
           <button
             type="submit"
-            className="w-full py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold rounded-lg shadow-md hover:opacity-90 transition"
+            className="flex justify-center items-center w-full py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold rounded-lg shadow-md hover:opacity-90 transition"
+            disabled={loading}
           >
-            Sign In
+            {loading ? (
+              <div className="flex space-x-1">
+                <span className="w-3 h-3 bg-white rounded-full animate-bounce delay-0"></span>
+                <span className="w-3 h-3 bg-white rounded-full animate-bounce delay-150"></span>
+                <span className="w-3 h-3 bg-white rounded-full animate-bounce delay-300"></span>
+              </div>
+            ) : (
+              "Sign In"
+            )}
           </button>
         </form>
-
-        <div className="mt-6 text-center text-gray-400">or sign in with</div>
         <Link
           to="/register"
           className="flex justify-center mt-2 hover:text-purple-400"
         >
-          don't have an account yet?
+          Don't have an account yet?
         </Link>
-
-        <div className="flex flex-col sm:flex-row gap-3 mt-4">
-          <button className="flex-1 py-2 flex items-center justify-center gap-2 bg-[#0f0e18] text-white border border-gray-600 rounded-lg hover:bg-gray-800 transition">
-            <FaGoogle /> Google
-          </button>
-          <button className="flex-1 py-2 flex items-center justify-center gap-2 bg-[#0f0e18] text-white border border-gray-600 rounded-lg hover:bg-gray-800 transition">
-            <FaGithub /> GitHub
-          </button>
-        </div>
       </div>
     </div>
   );
