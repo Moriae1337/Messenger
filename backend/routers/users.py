@@ -66,7 +66,7 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(),
         )
 
     token = create_access_token({"sub": user.username})
-    return {"access_token": token, "token_type": "bearer","username":user.username}
+    return {"access_token": token, "token_type": "bearer","user_id":user.id,"username":user.username}
 
 @router.delete("/delete/{user_name}", response_model=dict)
 async def delete_user_by_username(user_name: str, db: AsyncSession = Depends(get_db)):

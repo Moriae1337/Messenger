@@ -3,7 +3,7 @@ from sqlalchemy import text
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.ext.asyncio import AsyncSession
 from core import get_db, JWTMiddleware
-from routers import users
+from routers import users_router,messages_router,ws_router
 
 app = FastAPI()
 
@@ -29,4 +29,6 @@ async def health_check(db: AsyncSession = Depends(get_db)):
     scalar = result.scalar()
     return {"status": "ok", "db": scalar}
 
-app.include_router(users.router)
+app.include_router(users_router)
+app.include_router(messages_router)
+app.include_router(ws_router)

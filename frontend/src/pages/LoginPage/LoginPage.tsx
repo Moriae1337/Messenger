@@ -40,6 +40,7 @@ export default function LoginPage() {
     console.log(data);
     localStorage.setItem("access_token", data.access_token);
     localStorage.setItem("username", data.username);
+    localStorage.setItem("user_id", data.user_id);
     setLoading(false);
     showToast("User login successfull!", "success");
     navigate("/");

@@ -4,7 +4,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.types import ASGIApp
 from .auth import verify_token
 
-OPEN_ROUTES = ["/users/login", "/users/register","/docs","/openapi.json","/users"]
+OPEN_ROUTES = ["/users/login", "/users/register","/docs","/openapi.json","/users","/ws"]
 
 class JWTMiddleware(BaseHTTPMiddleware):
     def __init__(self, app: ASGIApp):
